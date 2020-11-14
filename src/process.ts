@@ -107,17 +107,18 @@ export class Process {
                 });
             } else {
                 //comment
-                if (vnode.value instanceof Node) {
-                    if (diff((<Node>values[vnode.index]).nodeValue, vnode.node.nodeValue)) {
-                        vnode.node.nodeValue = (<Node>values[vnode.index]).nodeValue;
-                    }
+                if (values[vnode.index] instanceof Node) {
+                    console.log(values[vnode.index]);
+                    vnode.node.parentNode.replaceChild(<Node>values[vnode.index], vnode.node);
+                    vnode.node = <Node>values[vnode.index];
                 } else {
                     if (diff(values[vnode.index], vnode.value)) {
+                        vnode.node.nodeValue = <string>values[vnode.index];
                         vnode.value = values[vnode.index];
-                        vnode.node.nodeValue = <string>vnode.value;
                     }
 
                 }
+
             }
         })
 

@@ -32,6 +32,6 @@ observer.observe(root, {
   characterDataOldValue: true,
 });
 render(h('text1', 1), root)
-// setTimeout(() => {
-//   render(h('text2', 2), root)
-// }, 3000);
+setTimeout(() => {
+  render(h('text2', 2), root)
+}, 3000);
