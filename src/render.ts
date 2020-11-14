@@ -11,3 +11,7 @@ export const render = (result:TemplateResult,container:Node)=>{
         process.patch(result.values);
     }
 }
+
+export const destroy = (container:Node)=>{
+    containerMap.delete(container);
+}
