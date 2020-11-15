@@ -108,9 +108,9 @@ export class Process {
             } else {
                 //comment
                 if (values[vnode.index] instanceof Node) {
-                    console.log(values[vnode.index]);
                     vnode.node.parentNode.replaceChild(<Node>values[vnode.index], vnode.node);
                     vnode.node = <Node>values[vnode.index];
+                    vnode.value = values[vnode.index];
                 } else {
                     if (diff(values[vnode.index], vnode.value)) {
                         vnode.node.nodeValue = <string>values[vnode.index];
