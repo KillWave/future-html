@@ -11,10 +11,10 @@ const child = html`
     </div>
   </section>
 `;
-const h = (text, num) => html`
+const h = (text, num,array) => html`
     <div data="${text}">123${num}
       ${child}
-      ${document.createTextNode("text Node")}
+      ${array.map((item:number)=>html`<div>${item}</div>`)}
     </div>
 `
 const root = document.querySelector('#root')
@@ -31,7 +31,7 @@ observer.observe(root, {
   attributeOldValue: true,
   characterDataOldValue: true,
 });
-render(h('text1', 1), root)
+render(h('text1', 1,[1,2,3,4]), root)
 setTimeout(() => {
-  render(h('text2', 2), root)
+  render(h('text2', 2,[5,6,7,8,9,10]), root)
 }, 3000);

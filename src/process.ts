@@ -2,6 +2,7 @@ import { boundAttributeSuffix, endsWith, deleteSuffix, marker, diff } from './to
 import { TemplateResult } from './result'
 import { NodeType, Vnode, VnodeAttribute } from './interfaces'
 import { render } from './render';
+import { containerMap } from './tools'
 export class Process {
     public tempalte: Node;
     public values: unknown[];
@@ -68,6 +69,7 @@ export class Process {
                         index++;
                         let childerNode = null;
                         const parent = node.parentNode;
+                        const vnodes: Vnode[] = [];
                         if (values[index] instanceof TemplateResult) {
                             node.remove();
                             const result = <TemplateResult>values[index];
@@ -75,16 +77,68 @@ export class Process {
                         } else if (values[index] instanceof Node) {
                             childerNode = values[index];
                             parent.replaceChild(childerNode, node);
-                        } else {
+                        } else if (values[index] instanceof Array) {
+                            node.remove();
+                            const arr = <Array<unknown>>values[index];
+                            const template = document.createDocumentFragment();
+                            for (let i = 0; i < arr.length; i++) {
+
+                                if (arr[i] instanceof TemplateResult) {
+                                    const tem = document.createDocumentFragment();
+
+                                    render(<TemplateResult>arr[i], tem);
+                                    // console.log([...Array.from(tem.childNodes)]);
+                                    vnodes.push({
+                                        node: tem,
+                                        childNodes: [...Array.from(tem.childNodes)],
+                                        value: arr[i],
+                                        index: i,
+                                        parent
+                                    });
+
+                                } else if (arr[i] instanceof Node) {
+                                    vnodes.push({
+                                        node: <Node>arr[i],
+                                        value: arr[i],
+                                        index: i
+                                    });
+
+                                } else {
+                                    const text = document.createTextNode(<string>arr[i]);
+                                    vnodes.push({
+                                        node: text,
+                                        value: arr[i],
+                                        index: i
+                                    });
+                                }
+
+                            }
+                            // console.log(vnodes)
+                            template.append(... (<Node[]>vnodes.map(node => node.node)))
+                            parent.append(template);
+                        }
+                        else {
                             childerNode = document.createTextNode(<string>values[index]);
                             parent.replaceChild(childerNode, node);
                         }
-                        const vnode: Vnode = {
-                            node: childerNode,
-                            value: values[index],
-                            index,
+                        if (values[index] instanceof Array) {
+                            const vnode: Vnode = {
+                                node: vnodes,
+                                value: values[index],
+                                index,
+                            }
+                            vnodes.length && this.bindNodes.push(vnode);
+                        } else {
+                            const vnode: Vnode = {
+                                node: childerNode,
+                                value: values[index],
+                                index,
+                            }
+                            childerNode && this.bindNodes.push(vnode);
                         }
-                        childerNode && this.bindNodes.push(vnode);
+
+
+
                     }
                     break;
 
@@ -106,14 +160,50 @@ export class Process {
                     return attr;
                 });
             } else {
+
                 //comment
                 if (values[vnode.index] instanceof Node) {
-                    vnode.node.parentNode.replaceChild(<Node>values[vnode.index], vnode.node);
+                    (<Node>vnode.node).parentNode.replaceChild(<Node>values[vnode.index], <Node>vnode.node);
                     vnode.node = <Node>values[vnode.index];
                     vnode.value = values[vnode.index];
+                } else if (values[vnode.index] instanceof Array) {
+                    const datas = <Array<TemplateResult>>values[vnode.index];
+                    for (let i = 0; i < datas.length; i++) {
+                        if (vnode.node[i]?.node) {
+                            render(datas[i], vnode.node[i].node);
+                        } else {
+                            const node = vnode.node[(<Vnode[]>vnode.node).length - 1].parent;
+                            (<unknown[]>vnode.value).push(datas[i]);
+                            const tmp = document.createDocumentFragment();
+                            render(datas[i], tmp);
+                            (<Vnode[]>vnode.node).push({
+                                node: tmp,
+                                childNodes: [...Array.from(tmp.childNodes)],
+                                value: datas[i],
+                                index: i,
+                                parent: node
+                            });
+
+                            node.append(vnode.node[i].node);
+                        }
+
+                    }
+                    if (datas.length < (<Vnode[]>vnode.node).length) {
+                        for (let i = datas.length; i < (<Vnode[]>vnode.node).length; i++) {
+                            containerMap.delete(vnode.node[i]);
+                            vnode.node[i].childNodes.forEach(node => {
+                                node.remove();
+                            });
+                            (<Vnode[]>vnode.node).splice(i, 1);
+                            (<unknown[]>vnode.value).splice(i, 1);
+
+                        }
+                    }
                 } else {
+
                     if (diff(values[vnode.index], vnode.value)) {
-                        vnode.node.nodeValue = <string>values[vnode.index];
+                        //(<Node>vnode.node).parentNode.replaceChild(document.createTextNode(<string>values[vnode.index]), <Node>vnode.node);
+                        (<Node>vnode.node).nodeValue = <string>values[vnode.index];
                         vnode.value = values[vnode.index];
                     }
 

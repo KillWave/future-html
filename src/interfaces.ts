@@ -11,8 +11,10 @@ export interface  VnodeAttribute{
     index:number;
 }
 export interface Vnode{
-    node:Element | Text | Node;
+    node:Element | Text | Node | Vnode[] |string;
     attributes?:VnodeAttribute[];
+    childNodes?:Node[];
     value?:unknown;
     index?:number;
+    parent?:Node;
 }
