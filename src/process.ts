@@ -169,33 +169,39 @@ export class Process {
                 } else if (values[vnode.index] instanceof Array) {
                     const datas = <Array<TemplateResult>>values[vnode.index];
                     for (let i = 0; i < datas.length; i++) {
-                        if (vnode.node[i]?.node) {
-                            render(datas[i], vnode.node[i].node);
-                        } else {
-                            const node = vnode.node[(<Vnode[]>vnode.node).length - 1].parent;
-                            (<unknown[]>vnode.value).push(datas[i]);
-                            const tmp = document.createDocumentFragment();
-                            render(datas[i], tmp);
-                            (<Vnode[]>vnode.node).push({
-                                node: tmp,
-                                childNodes: [...Array.from(tmp.childNodes)],
-                                value: datas[i],
-                                index: i,
-                                parent: node
-                            });
+                        if (datas[i] instanceof TemplateResult) {
+                            if (vnode.node[i]?.node) {
+                                render(datas[i], vnode.node[i].node);
+                            } else {
+                                const node = vnode.node[(<Vnode[]>vnode.node).length - 1].parent;
+                                (<unknown[]>vnode.value).push(datas[i]);
+                                const tmp = document.createDocumentFragment();
+                                render(datas[i], tmp);
+                                (<Vnode[]>vnode.node).push({
+                                    node: tmp,
+                                    childNodes: [...Array.from(tmp.childNodes)],
+                                    value: datas[i],
+                                    index: i,
+                                    parent: node
+                                });
 
-                            node.append(vnode.node[i].node);
+                                node.append(vnode.node[i].node);
+                            }
                         }
+
 
                     }
                     if (datas.length < (<Vnode[]>vnode.node).length) {
+                        // if(datas[i] instanceof)
                         for (let i = datas.length; i < (<Vnode[]>vnode.node).length; i++) {
-                            containerMap.delete(vnode.node[i]);
-                            vnode.node[i].childNodes.forEach(node => {
-                                node.remove();
-                            });
-                            (<Vnode[]>vnode.node).splice(i, 1);
-                            (<unknown[]>vnode.value).splice(i, 1);
+                            if (datas[i] instanceof TemplateResult) {
+                                containerMap.delete(vnode.node[i]);
+                                vnode.node[i].childNodes.forEach(node => {
+                                    node.remove();
+                                });
+                                (<Vnode[]>vnode.node).splice(i, 1);
+                                (<unknown[]>vnode.value).splice(i, 1);
+                            }
 
                         }
                     }
