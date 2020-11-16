@@ -14,7 +14,11 @@ const child = html`
 const h = (text, num,array) => html`
     <div data="${text}">123${num}
       ${child}
-      ${array}
+      ${array.map(item=> {
+        const div = document.createElement('div');
+        div.innerHTML = item;
+        return div;
+      })}
     </div>
 `
 const root = document.querySelector('#root')
@@ -31,7 +35,7 @@ observer.observe(root, {
   attributeOldValue: true,
   characterDataOldValue: true,
 });
-render(h('text1', 1,[1,2,3,4] ), root)
+render(h('text1', 1,[5,6,7,8,9,10]  ), root)
 setTimeout(() => {
-  render(h('text2', 2,[5,6,7,8,9,10]), root)
+  render(h('text2', 2,[1,2,3,4]), root)
 }, 3000);
