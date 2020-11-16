@@ -13,7 +13,7 @@ const child = html`
 `;
 const h = (text, num,array) => html`
     <div data="${text}">123${num}
-      ${child}
+      ${html `<div>${num}</div>`}
       ${array.map(item=> {
         const div = document.createElement('div');
         div.innerHTML = item;

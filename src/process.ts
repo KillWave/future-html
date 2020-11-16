@@ -69,10 +69,22 @@ export class Process {
                         let childerNode = null;
                         const parent = node.parentNode;
                         const vnodes: Vnode[] = [];
+                        let resultVnode = null;
                         if (values[index] instanceof TemplateResult) {
                             node.remove();
+                            const tem = document.createDocumentFragment();
                             const result = <TemplateResult>values[index];
-                            render(result, parent)
+
+                            render(result, tem)
+                            // tem.append(result)
+                            resultVnode = {
+                                node: tem,
+                                childNodes: [...Array.from(tem.childNodes)],
+                                value: result,
+                                index,
+                                parent
+                            };
+                            parent.append(tem);
                         } else if (values[index] instanceof Node) {
                             childerNode = values[index];
                             parent.replaceChild(childerNode, node);
@@ -126,6 +138,8 @@ export class Process {
                                 index,
                             }
                             vnodes.length && this.bindNodes.push(vnode);
+                        } else if (values[index] instanceof TemplateResult) {
+                            resultVnode && this.bindNodes.push(resultVnode);
                         } else {
                             const vnode: Vnode = {
                                 node: childerNode,
@@ -148,6 +162,7 @@ export class Process {
             vnode.node = <Node>value;
             vnode.value = value;
         } else if (value instanceof TemplateResult) {
+            console.log(vnode.node)
             render(value, <Node>vnode.node);
         } else {
             if (diff(value, vnode.value)) {
@@ -234,6 +249,7 @@ export class Process {
                         }
                     }
                 } else {
+                    console.log(vnode, values[vnode.index]);
                     this.commit(vnode, values[vnode.index]);
                 }
 
