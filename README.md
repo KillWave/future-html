@@ -1,7 +1,7 @@
 # future-html
 html template
 
-##start
+## start
 ### step 1
 git clone https://github.com/KillWave/future-html.git
 ### step 2
