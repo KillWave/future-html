@@ -74,7 +74,6 @@ export class Process {
                             node.remove();
                             const tem = document.createDocumentFragment();
                             const result = <TemplateResult>values[index];
-
                             render(result, tem)
                             // tem.append(result)
                             resultVnode = {
@@ -91,8 +90,9 @@ export class Process {
                         } else if (values[index] instanceof Array) {
                             node.remove();
                             const arr = <Array<unknown>>values[index];
+                            const len = arr.length;
                             const template = document.createDocumentFragment();
-                            for (let i = 0; i < arr.length; i++) {
+                            for (let i = 0; i < len; i++) {
 
                                 if (arr[i] instanceof TemplateResult) {
                                     const tem = document.createDocumentFragment();
@@ -185,12 +185,16 @@ export class Process {
             } else {
                 if (values[vnode.index] instanceof Array) {
                     const datas = <Array<unknown>>values[vnode.index];
-                    for (let i = 0; i < datas.length; i++) {
+                    const len = datas.length;
+                    const vnodeLen = (<Vnode[]>vnode.node).length;
+                    const vnodelast = vnodeLen - 1;
+
+                    for (let i = 0; i < len; i++) {
                         if (datas[i] instanceof TemplateResult) {
                             if (vnode.node[i]?.node) {
                                 this.commit(<Vnode>vnode.node[i], datas[i]);
                             } else {
-                                const node = vnode.node[(<Vnode[]>vnode.node).length - 1].parent;
+                                const node = vnode.node[vnodelast].parent;
                                 (<unknown[]>vnode.value).push(datas[i]);
                                 const tmp = document.createDocumentFragment();
                                 render(<TemplateResult>datas[i], tmp);
@@ -208,7 +212,7 @@ export class Process {
                             if (vnode.node[i]) {
                                 this.commit(vnode.node[i], datas[i]);
                             } else {
-                                const node = vnode.node[(<Vnode[]>vnode.node).length - 1].node.parentNode;
+                                const node = vnode.node[vnodelast].node.parentNode;
                                 const tmp = document.createDocumentFragment();
                                 tmp.append(<string>datas[i]);
                                 const [box] = [...Array.from(tmp.childNodes)];
@@ -224,22 +228,23 @@ export class Process {
 
 
                     }
-                    if (datas.length < (<Vnode[]>vnode.node).length) {
-                        for (let i = datas.length; i < (<Vnode[]>vnode.node).length; i++) {
+                    const datasLen = datas.length;
+                    if (datasLen < vnodeLen) {
+                        for (let i = datasLen; i < vnodeLen; i++) {
                             const value = vnode.node[i].value;
                             const node = vnode.node[i].node;
                             if (value instanceof TemplateResult) {
                                 destroy(node);
-                                const arr = (<Vnode[]>vnode.node).splice(i, (<Vnode[]>vnode.node).length);
+                                const arr = (<Vnode[]>vnode.node).splice(i, vnodeLen);
                                 arr.forEach(vnodes => {
                                     vnodes.childNodes.forEach(node => {
                                         (<Element>node).remove();
                                     });
                                 });
-                                (<unknown[]>vnode.value).splice(i, (<Vnode[]>vnode.node).length);
+                                (<unknown[]>vnode.value).splice(i, vnodeLen);
                             } else {
-                                const arr = (<Vnode[]>vnode.node).splice(i, (<Vnode[]>vnode.node).length);
-                                (<unknown[]>vnode.value).splice(i, (<Vnode[]>vnode.value).length);
+                                const arr = (<Vnode[]>vnode.node).splice(i, vnodeLen);
+                                (<unknown[]>vnode.value).splice(i, vnodeLen);
                                 arr.forEach((node: Vnode) => {
                                     (<Element>node.node).remove();
                                 });
