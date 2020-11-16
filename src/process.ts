@@ -1,7 +1,7 @@
 import { boundAttributeSuffix, endsWith, deleteSuffix, marker, diff } from './tools'
 import { TemplateResult } from './result'
 import { NodeType, Vnode, VnodeAttribute } from './interfaces'
-import { render } from './render';
+import { render, destroy } from './render';
 import { containerMap } from './tools'
 export class Process {
     public tempalte: Node;
@@ -113,7 +113,6 @@ export class Process {
                                 }
 
                             }
-                            // console.log(vnodes)
                             template.append(... (<Node[]>vnodes.map(node => node.node)))
                             parent.append(template);
                         }
@@ -136,9 +135,6 @@ export class Process {
                             }
                             childerNode && this.bindNodes.push(vnode);
                         }
-
-
-
                     }
                     break;
             }
@@ -220,7 +216,7 @@ export class Process {
                             const value = vnode.node[i].value;
                             const node = vnode.node[i].node;
                             if (value instanceof TemplateResult) {
-                                containerMap.delete(node);
+                                destroy(node);
                                 const arr = (<Vnode[]>vnode.node).splice(i, (<Vnode[]>vnode.node).length);
                                 arr.forEach(vnodes => {
                                     vnodes.childNodes.forEach(node => {
@@ -228,13 +224,6 @@ export class Process {
                                     });
                                 });
                                 (<unknown[]>vnode.value).splice(i, (<Vnode[]>vnode.node).length);
-                            } else if (datas[i] instanceof Node) {
-                                containerMap.delete(vnode.node[i]);
-                                const arr = (<Vnode[]>vnode.node).splice(i, (<Vnode[]>vnode.node).length);
-                                (<unknown[]>vnode.value).splice(i, (<Vnode[]>vnode.value).length);
-                                arr.forEach((node: Vnode) => {
-                                    (<Element>node.node).remove();
-                                })
                             } else {
                                 const arr = (<Vnode[]>vnode.node).splice(i, (<Vnode[]>vnode.node).length);
                                 (<unknown[]>vnode.value).splice(i, (<Vnode[]>vnode.value).length);
