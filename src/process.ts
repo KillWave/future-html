@@ -2,7 +2,6 @@ import { boundAttributeSuffix, endsWith, deleteSuffix, marker, diff } from './to
 import { TemplateResult } from './result'
 import { NodeType, Vnode, VnodeAttribute } from './interfaces'
 import { render, destroy } from './render';
-import { containerMap } from './tools'
 export class Process {
     public tempalte: Node;
     public values: unknown[];
