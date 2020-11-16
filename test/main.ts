@@ -16,8 +16,8 @@ const h = (text, num,array) => html`
 `
 const root = document.querySelector('#root');
 
-render(h('text1', 1,[5,6,7,8,9,10]  ), root)
+render(h('text1', 1, [1,2,3,4]  ), root)
 setTimeout(() => {
-  render(h('text2', 2,[1,2,3,4]), root);
+  render(h('text2', 2,[5,6,7,8,9,10]), root);
   destroy(root);
 }, 3000);

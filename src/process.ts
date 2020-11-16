@@ -91,7 +91,6 @@ export class Process {
                             node.remove();
                             const arr = <Array<unknown>>values[index];
                             const len = arr.length;
-                            const template = document.createDocumentFragment();
                             for (let i = 0; i < len; i++) {
 
                                 if (arr[i] instanceof TemplateResult) {
@@ -124,8 +123,7 @@ export class Process {
                                 }
 
                             }
-                            template.append(... (<Node[]>vnodes.map(node => node.node)))
-                            parent.append(template);
+                            parent.append(... (<Node[]>vnodes.map(node => node.node)));
                         }
                         else {
                             childerNode = document.createTextNode(<string>values[index]);
@@ -188,13 +186,15 @@ export class Process {
                     const len = datas.length;
                     const vnodeLen = (<Vnode[]>vnode.node).length;
                     const vnodelast = vnodeLen - 1;
-
+                    const resultNodes = [];
+                    const resultParent = vnode.node[vnodelast].parent;
+                    const nodeParent = vnode.node[vnodelast].node.parentNode;
+                    const nodeChild = [];
                     for (let i = 0; i < len; i++) {
                         if (datas[i] instanceof TemplateResult) {
                             if (vnode.node[i]?.node) {
                                 this.commit(<Vnode>vnode.node[i], datas[i]);
                             } else {
-                                const node = vnode.node[vnodelast].parent;
                                 (<unknown[]>vnode.value).push(datas[i]);
                                 const tmp = document.createDocumentFragment();
                                 render(<TemplateResult>datas[i], tmp);
@@ -203,16 +203,14 @@ export class Process {
                                     childNodes: [...Array.from(tmp.childNodes)],
                                     value: datas[i],
                                     index: i,
-                                    parent: node
+                                    parent: resultParent
                                 });
-
-                                node.append(vnode.node[i].node);
+                                resultNodes.push(vnode.node[i].node);
                             }
                         } else {
                             if (vnode.node[i]) {
                                 this.commit(vnode.node[i], datas[i]);
                             } else {
-                                const node = vnode.node[vnodelast].node.parentNode;
                                 const tmp = document.createDocumentFragment();
                                 tmp.append(<string>datas[i]);
                                 const [box] = [...Array.from(tmp.childNodes)];
@@ -221,19 +219,19 @@ export class Process {
                                     value: datas[i],
                                     index: i
                                 });
-                                node.append(tmp);
+                                nodeChild.push(tmp);
                             }
 
                         }
 
 
                     }
-                    if (len < vnodeLen) {
-                        for (let i = len; i < vnodeLen; i++) {
-                            const value = vnode.node[i].value;
-                            const node = vnode.node[i].node;
-                            if (value instanceof TemplateResult) {
-                                destroy(node);
+                    resultParent?.append(...resultNodes);
+                    nodeParent?.append(...nodeChild);
+                    if (len < (<Vnode[]>vnode.node).length) {
+                        for (let i = len; i < (<Vnode[]>vnode.node).length; i++) {
+                            if (vnode.node[i].value instanceof TemplateResult) {
+                                destroy(vnode.node[i].node);
                                 const arr = (<Vnode[]>vnode.node).splice(i, vnodeLen);
                                 arr.forEach(vnodes => {
                                     vnodes.childNodes.forEach(node => {
