@@ -162,7 +162,6 @@ export class Process {
             vnode.node = <Node>value;
             vnode.value = value;
         } else if (value instanceof TemplateResult) {
-            console.log(vnode.node)
             render(value, <Node>vnode.node);
         } else {
             if (diff(value, vnode.value)) {
@@ -249,7 +248,6 @@ export class Process {
                         }
                     }
                 } else {
-                    console.log(vnode, values[vnode.index]);
                     this.commit(vnode, values[vnode.index]);
                 }
 
