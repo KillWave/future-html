@@ -228,9 +228,8 @@ export class Process {
 
 
                     }
-                    const datasLen = datas.length;
-                    if (datasLen < vnodeLen) {
-                        for (let i = datasLen; i < vnodeLen; i++) {
+                    if (len < vnodeLen) {
+                        for (let i = len; i < vnodeLen; i++) {
                             const value = vnode.node[i].value;
                             const node = vnode.node[i].node;
                             if (value instanceof TemplateResult) {
