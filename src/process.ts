@@ -148,6 +148,21 @@ export class Process {
 
         return iterator.root;
     }
+    commit(vnode: Vnode, value: unknown) {
+        if (value instanceof Node) {
+            (<Node>vnode.node).parentNode.replaceChild(<Node>value, <Node>vnode.node);
+            vnode.node = <Node>value;
+            vnode.value = value;
+        } else if (value instanceof TemplateResult) {
+            render(value, <Node>vnode.node);
+        } else {
+            if (diff(value, vnode.value)) {
+                (<Node>vnode.node).nodeValue = <string>value;
+                vnode.value = value;
+            }
+        }
+
+    }
     patch(values: unknown[]) {
         this.bindNodes.forEach((vnode: Vnode) => {
             if (vnode.attributes) {
@@ -160,23 +175,18 @@ export class Process {
                     return attr;
                 });
             } else {
-
-                //comment
-                if (values[vnode.index] instanceof Node) {
-                    (<Node>vnode.node).parentNode.replaceChild(<Node>values[vnode.index], <Node>vnode.node);
-                    vnode.node = <Node>values[vnode.index];
-                    vnode.value = values[vnode.index];
-                } else if (values[vnode.index] instanceof Array) {
-                    const datas = <Array<TemplateResult>>values[vnode.index];
+                if (values[vnode.index] instanceof Array) {
+                    const datas = <Array<unknown>>values[vnode.index];
                     for (let i = 0; i < datas.length; i++) {
+
                         if (datas[i] instanceof TemplateResult) {
                             if (vnode.node[i]?.node) {
-                                render(datas[i], vnode.node[i].node);
+                                this.commit(<Vnode>vnode.node[i], datas[i]);
                             } else {
                                 const node = vnode.node[(<Vnode[]>vnode.node).length - 1].parent;
                                 (<unknown[]>vnode.value).push(datas[i]);
                                 const tmp = document.createDocumentFragment();
-                                render(datas[i], tmp);
+                                render(<TemplateResult>datas[i], tmp);
                                 (<Vnode[]>vnode.node).push({
                                     node: tmp,
                                     childNodes: [...Array.from(tmp.childNodes)],
@@ -187,12 +197,30 @@ export class Process {
 
                                 node.append(vnode.node[i].node);
                             }
+                        } else {
+                            if (vnode.node[i]) {
+                                this.commit({
+                                    node: <Node>vnode.node[i].node,
+                                    value: vnode.node[i].value,
+                                }, datas[i]);
+                            } else {
+                                const node = vnode.node[(<Vnode[]>vnode.node).length - 1].node.parentNode;
+                                const tmp = document.createDocumentFragment();
+                                tmp.append(<string>datas[i]);
+                                const [box] = [...Array.from(tmp.childNodes)];
+                                (<Vnode[]>vnode.node).push({
+                                    node: box,
+                                    value: datas[i],
+                                    index: i
+                                });
+                                node.append(tmp);
+                            }
+
                         }
 
 
                     }
                     if (datas.length < (<Vnode[]>vnode.node).length) {
-                        // if(datas[i] instanceof)
                         for (let i = datas.length; i < (<Vnode[]>vnode.node).length; i++) {
                             if (datas[i] instanceof TemplateResult) {
                                 containerMap.delete(vnode.node[i]);
@@ -201,17 +229,25 @@ export class Process {
                                 });
                                 (<Vnode[]>vnode.node).splice(i, 1);
                                 (<unknown[]>vnode.value).splice(i, 1);
+                            } else if (datas[i] instanceof Node) {
+                                containerMap.delete(vnode.node[i]);
+                                const arr = (<Vnode[]>vnode.node).splice(i, (<Vnode[]>vnode.node).length);
+                                (<unknown[]>vnode.value).splice(i, (<Vnode[]>vnode.value).length);
+                                arr.forEach((node: Vnode) => {
+                                    (<Element>node.node).remove();
+                                })
+                            } else {
+                                const arr = (<Vnode[]>vnode.node).splice(i, (<Vnode[]>vnode.node).length);
+                                (<unknown[]>vnode.value).splice(i, (<Vnode[]>vnode.value).length);
+                                arr.forEach((node: Vnode) => {
+                                    (<Element>node.node).remove();
+                                });
                             }
 
                         }
                     }
                 } else {
-
-                    if (diff(values[vnode.index], vnode.value)) {
-                        //(<Node>vnode.node).parentNode.replaceChild(document.createTextNode(<string>values[vnode.index]), <Node>vnode.node);
-                        (<Node>vnode.node).nodeValue = <string>values[vnode.index];
-                        vnode.value = values[vnode.index];
-                    }
+                    this.commit(vnode, values[vnode.index]);
 
                 }
 
