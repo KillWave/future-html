@@ -1,5 +1,5 @@
 import { html } from '../src/index'
-import { render } from '../src/render';
+import { render, destroy } from '../src/render';
 
 //html 字符串模板
 //用法  const j =  html`<div>${变量}</div>`
@@ -37,21 +37,22 @@ import { render } from '../src/render';
 
 // </div>
 // `;
-function handle(){
-    alert('click');
-}
-const h = (text, num, array) => html`
-    <div data="${text}" @click="${handle}">123${num}
-        ${array.map(item=>html`<div>${item}</div>`)}
-    </div>
-`;
+
+//页面
+const button = ({
+    text,
+    clickHandle
+}, container) => {
+    render(html`
+    <button @click="${clickHandle}">${text}</button>
+    `, container);
+};
 const root = document.querySelector('#root');
-console.time('1');
-render(h('text1', 1,[5, 6, 7, 8, 9, 10] ), root)
-console.timeEnd('1')
-setTimeout(() => {
-    console.time('2');
-    render(h('text2', 2,[1, 2, 3, 4] ), root);
-    console.timeEnd('2');
-}, 3000);
+button({
+    text: '我是button',
+    clickHandle() {
+        alert('我是button')
+    }
+}, root);
+
 
