@@ -79,11 +79,18 @@ export class TemplateResult {
                         if (startWidth(value)) {
                             index++;
                             const attrName = attributes[i].name;
-                            const val = value.slice(8);
                             const itemFragment = this.fragments[index];
-                            itemFragment.attribute = attrName;
                             itemFragment.el = node;
-                            (<Element>itemFragment.el).setAttribute(attrName, val);
+                            if (attrName[0] === '@') {
+                                (<Element>itemFragment.el).removeAttribute(attrName);
+                                const eventName = attrName.slice(1).toLowerCase();
+                                itemFragment.el.addEventListener(eventName, <EventListenerObject>itemFragment.value);
+                            } else {
+                                itemFragment.attribute = attrName;
+                                const val = value.slice(8);
+                                (<Element>itemFragment.el).setAttribute(attrName, val);
+                            }
+
                         }
                     }
                 }

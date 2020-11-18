@@ -37,13 +37,12 @@ import { render } from '../src/render';
 
 // </div>
 // `;
+function handle(){
+    alert('click');
+}
 const h = (text, num, array) => html`
-    <div data="${text}">123${num}
-        ${array.map(item=>{
-            const div = document.createElement('div');
-            div.innerText = item;
-            return div;
-        })}
+    <div data="${text}" @click="${handle}">123${num}
+        ${array.map(item=>html`<div>${item}</div>`)}
     </div>
 `;
 const root = document.querySelector('#root');
@@ -56,6 +55,3 @@ setTimeout(() => {
     console.timeEnd('2');
 }, 3000);
 
-
-
-//  ${[5, 6, 7, 8, 9, 10].map(item=>html`<div>${item}</div>`)}
