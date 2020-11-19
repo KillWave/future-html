@@ -39,20 +39,21 @@ import { render, destroy } from '../src/render';
 // `;
 
 //页面
-const button = ({
-    text,
-    clickHandle
-}, container) => {
-    render(html`
-    <button @click="${clickHandle}">${text}</button>
-    `, container);
-};
+const h = (text, num, array) => html`
+    <div data="${text}">123${num}
+        ${array.map(item => html`<div>${item}</div>`)}
+    </div>
+`
 const root = document.querySelector('#root');
-button({
-    text: '我是button',
-    clickHandle() {
-        alert('我是button')
-    }
-}, root);
+
+console.time('1');
+render(h('text1', 1, [1, 2, 3, 4]), root)
+console.timeEnd('1')
+setTimeout(() => {
+    console.time('2');
+    render(h('text2', 2, [5, 6, 7, 8, 9, 10]), root);
+    console.timeEnd('2');
+    destroy(root);
+}, 3000);
 
 

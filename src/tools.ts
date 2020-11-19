@@ -1,46 +1,22 @@
 
-import { TemplateResult } from './result'
-import { Fragment } from './interfaces'
-import { render } from './render'
+import {Process} from './process'
 export const lastAttributeNameRegex = /([ \x09\x0a\x0c\x0d])([^\0-\x1F\x7F-\x9F "'>=/]+)([ \x09\x0a\x0c\x0d]*=[ \x09\x0a\x0c\x0d]*(?:[^ \x09\x0a\x0c\x0d"'`<>=]*|"[^"]*|'[^']*))$/;
-export const marker = "$future$";
-
-export const containerMap = new WeakMap<Node, TemplateResult>();
-
-
-export function startWidth(name: string) {
-  return name.slice(0, 8) === marker;
-}
-
-export function valueInstanceofto(value: unknown, arr: Fragment[], attributeMatch: any, htmlFragment?: string) {
-  let fragment: Fragment = { value: null }
-  if (value instanceof TemplateResult) {
-    //result
-    const box = document.createDocumentFragment();
-    render(value, box);
-    fragment.value = value;
-    fragment.el = box.childNodes[0];
-  } else if (value instanceof Node) {
-    //node
-    fragment.el = value;
-    fragment.value = value;
+export const marker = `{{${String(Math.random()).slice(2)}}}`;
+export const boundAttributeSuffix = "$future$";
+export const nodeMarker = `<!--${marker}-->`;
+export const containerMap = new WeakMap<Node, Process>();
+export const deleteSuffix = (str: string, suffix: string) => {
+  const index = str.length - suffix.length;
+  return str.slice(0, index);
+};
+export const endsWith = (str: string, suffix: string) => {
+  const index = str.length - suffix.length;
+  return index >= 0 && str.slice(index) === suffix;
+};
+export const diff = (newData: unknown, oldData: unknown) => {
+  if (newData === oldData) {
+    return false;
   } else {
-    //test
-    if (htmlFragment) {
-      fragment.strings = !!attributeMatch ? newTemplateStringsArray(htmlFragment, marker) : newTemplateStringsArray(htmlFragment, `<!--${marker}-->`);
-      fragment.value = value;
-    } else {
-      fragment.el = document.createTextNode(<string>value);
-      fragment.value = value;
-    }
-
+    return true;
   }
-  arr.push(fragment);
-
-}
-
-function newTemplateStringsArray(str: string, comment: string): TemplateStringsArray {
-  const arr: any = [str + comment, ''];
-  arr.raw = [str + comment, ''];
-  return arr;
-}
+};
