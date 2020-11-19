@@ -104,9 +104,8 @@ export class Process {
                 const oldSize = this.arrSize.pop();
                 const newSize = value.length;
                 if (oldSize != newSize) {
-                    const start = i + index;
                     if (oldSize > newSize) {
-                        const removeNodes = this.watchNodes.splice(start, oldSize - newSize);
+                        const removeNodes = this.watchNodes.splice(i + index, oldSize - newSize);
                         const { length } = removeNodes;
                         for (let j = 0; j < length; j++) {
                             const removeNode = removeNodes[j];
@@ -140,7 +139,7 @@ export class Process {
                 this.patch(value, i);
             } else if (value instanceof TemplateResult) {
                 (<Process>watchValue).patch(value.values);
-            } else if (typeof value != 'function') {
+            } else {
                 if (diff(value, watchValue)) {
                     if (watchNode.type === NodeType.NODE) {
                         (<Element>watchNode.node).setAttribute(watchNode.name, <string>value);

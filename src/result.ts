@@ -1,5 +1,3 @@
-
-// import { TemplateResult } from './interfaces'
 import { marker, lastAttributeNameRegex, boundAttributeSuffix, nodeMarker } from './tools'
 //防止xss
 const trustedTypes = (<any>window).trustedTypes;
