@@ -1,4 +1,5 @@
 
+// import { TemplateResult } from './interfaces'
 import { marker, lastAttributeNameRegex, boundAttributeSuffix, nodeMarker } from './tools'
 //防止xss
 const trustedTypes = (<any>window).trustedTypes;
@@ -36,7 +37,7 @@ export class TemplateResult {
             }
         }
         html += this.strings[len];
-        return html.trim();
+        return html;
     }
     getTemplate() {
         const template = document.createElement("template");

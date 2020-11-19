@@ -7,7 +7,7 @@ import commonjs from 'rollup-plugin-commonjs'
 export default {
     input: 'test/main.ts',
     output: {
-        file: 'dist/bundle.js',
+        file: 'dist/future-html.js',
         format: 'es',
         sourcemap: true,
     },
