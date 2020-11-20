@@ -51,44 +51,48 @@ export class Process {
         let node = null;
         let index = -1;
         while ((node = iterator.nextNode())) {
-            if (node.nodeType === NodeType.NODE) {
-                if (node.hasAttributes()) {
-                    const attributes = [...node.attributes];
-                    const preAttr = attributes.filter(((attr) =>
-                        endsWith(attr.name, boundAttributeSuffix))
-                    );
-                    const { length } = preAttr;
-                    for (let i = 0; i < length; i++) {
-                        index++;
-                        const attr = preAttr[i];
-                        const name = deleteSuffix(preAttr[i].name, boundAttributeSuffix);
-                        node.removeAttribute(attr.name);
-                        const prefix = name[0];
-                        const value = values[index];
-                        let watchNode = null;
-                        if (prefix === "@") {
-                            node.addEventListener(
-                                name.slice(1).toLowerCase(),
-                                value
-                            );
-                            watchNode = new WatchNode(NodeType.CALLBACK, name, value, node);
-                        } else {
-                            node.setAttribute(name, value);
-                            watchNode = new WatchNode(NodeType.NODE, name, value, node);
+            switch (node.nodeType) {
+                case NodeType.NODE:
+                    if (node.hasAttributes()) {
+                        const attributes = [...node.attributes];
+                        const preAttr = attributes.filter(((attr) =>
+                            endsWith(attr.name, boundAttributeSuffix))
+                        );
+                        const { length } = preAttr;
+                        for (let i = 0; i < length; i++) {
+                            index++;
+                            const attr = preAttr[i];
+                            const name = deleteSuffix(preAttr[i].name, boundAttributeSuffix);
+                            node.removeAttribute(attr.name);
+                            const prefix = name[0];
+                            const value = values[index];
+                            let watchNode = null;
+                            if (prefix === "@") {
+                                node.addEventListener(
+                                    name.slice(1).toLowerCase(),
+                                    value
+                                );
+                                watchNode = new WatchNode(NodeType.CALLBACK, name, value, node);
+                            } else {
+                                node.setAttribute(name, value);
+                                watchNode = new WatchNode(NodeType.NODE, name, value, node);
 
+                            }
+                            this.watchNodes.push(watchNode);
                         }
-                        this.watchNodes.push(watchNode);
                     }
-                }
-            } else {
-                if (node.data === marker) {
-                    index++;
-                    const value = values[index];
-                    const parent = node.parentNode;
-                    this.commentHandle(parent, value, this.add.bind(this));
-                    node.remove();
-                }
+                    break;
+                case NodeType.COMMENT:
+                    if (node.data === marker) {
+                        index++;
+                        const value = values[index];
+                        const parent = node.parentNode;
+                        this.commentHandle(parent, value, this.add.bind(this));
+                        node.remove();
+                    }
+                    break;
             }
+
         }
         return iterator.root;
     }
