@@ -26,7 +26,7 @@ export class Process {
         this.root = (<any>this.el).firstElementChild;
     }
     commentHandle(parent: Element, value: unknown, callBack: any) {
-        let watchNode = new WatchNode(NodeType.COMMENT, "", value, null);
+        const watchNode = new WatchNode(NodeType.COMMENT, "", value, null);
         if (value instanceof TemplateResult) {
             const val = new Process(value);
             watchNode.value = val;
@@ -66,7 +66,7 @@ export class Process {
                             node.removeAttribute(attr.name);
                             const prefix = name[0];
                             const value = values[index];
-                            let watchNode = new WatchNode(NodeType.CALLBACK, name, value, node);
+                            const watchNode = new WatchNode(NodeType.CALLBACK, name, value, node);
                             if (prefix === "@") {
                                 node.addEventListener(
                                     name.slice(1).toLowerCase(),
