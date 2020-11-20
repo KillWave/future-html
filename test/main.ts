@@ -39,14 +39,37 @@ import { render, destroy } from '../src/render';
 // `;
 
 const root = document.querySelector('#root');
-//页面
+// //页面
 const h = (text, num, array) => html`
     <div data="${text}" @click="${handle}">123${num}
         ${array.map(item => html`<div>${item}</div>`)}
     </div>`
 const handle = () => {
+    console.time('update');
     render(h('text2', 2, [1, 2, 3, 4]), root);
+    console.timeEnd('update');
 }
+
+// function define(tagName: string, fn) {
+//     customElements.define(tagName, class Cmp extends HTMLElement {
+//         constructor(){
+//             super();
+//             const h = fn({propertys:this.attributes});
+//             render(h(),this);
+//         }
+//     });
+// }
+// define('app-root', ({propertys:{data}}) => {
+//     console.log(data);
+//     return () => html`<div>${data.value}</div>`;
+// })
+
+// AppRoot.prototype.render = () => {
+//     const val = '123'
+//     html`<div>${val}</div>`;
+// }
+
+
 
 
 

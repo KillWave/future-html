@@ -1,8 +1,20 @@
 
 import { TemplateResult } from './result'
-import { NodeType, WatchNode } from './interfaces'
+import { NodeType, WatchNodeBO } from './interfaces'
 import { boundAttributeSuffix, endsWith, deleteSuffix, marker, diff } from './tools'
 
+class WatchNode implements WatchNodeBO {
+    public type: NodeType;
+    public name: string;
+    public value: unknown;
+    public node: Node;
+    constructor(type: NodeType, name: string, value: unknown, node: Node) {
+        this.type = type;
+        this.name = name;
+        this.value = value;
+        this.node = node;
+    }
+}
 export class Process {
     public el: Node;
     private watchNodes: WatchNode[] = [];
@@ -14,15 +26,10 @@ export class Process {
         this.root = (<any>this.el).firstElementChild;
     }
     commentHandle(parent: Element, value: unknown, callBack: any) {
-        const watchNode = {
-            type: NodeType.COMMENT,
-            value,
-            node: null
-        }
+        let watchNode = null;
         if (value instanceof TemplateResult) {
             const val = new Process(value);
-            watchNode.value = val;
-            watchNode.node = val.el
+            watchNode = new WatchNode(NodeType.COMMENT, "", val, val.el);
 
         } else if (value instanceof Array) {
             const { length } = value;
@@ -32,7 +39,7 @@ export class Process {
             }
             return;
         } else {
-            watchNode.node = document.createTextNode(<string>value);
+            watchNode = new WatchNode(NodeType.COMMENT, "", value, document.createTextNode(<string>value));
         }
         callBack(parent, watchNode);
     }
@@ -47,8 +54,8 @@ export class Process {
             if (node.nodeType === NodeType.NODE) {
                 if (node.hasAttributes()) {
                     const attributes = [...node.attributes];
-                    const preAttr = attributes.filter((attr) =>
-                        endsWith(attr.name, boundAttributeSuffix)
+                    const preAttr = attributes.filter(((attr) =>
+                        endsWith(attr.name, boundAttributeSuffix))
                     );
                     const { length } = preAttr;
                     for (let i = 0; i < length; i++) {
@@ -58,21 +65,16 @@ export class Process {
                         node.removeAttribute(attr.name);
                         const prefix = name[0];
                         const value = values[index];
-                        const watchNode = {
-                            type: NodeType.CALLBACK,
-                            name: name,
-                            value,
-                            node: null
-                        }
+                        let watchNode = null;
                         if (prefix === "@") {
                             node.addEventListener(
                                 name.slice(1).toLowerCase(),
                                 value
                             );
+                            watchNode = new WatchNode(NodeType.CALLBACK, name, value, node);
                         } else {
                             node.setAttribute(name, value);
-                            watchNode.type = NodeType.NODE;
-                            watchNode.node = node;
+                            watchNode = new WatchNode(NodeType.NODE, name, value, node);
 
                         }
                         this.watchNodes.push(watchNode);
@@ -90,9 +92,15 @@ export class Process {
         }
         return iterator.root;
     }
-    add(parent, val) {
+    add(parent: Element, val: WatchNode) {
         parent.append(val.node);
         this.watchNodes.push(val);
+    }
+    update(parent: Element, value: unknown, index: number) {
+        this.commentHandle(parent, value, ((parent, val) => {
+            this.watchNodes.splice(index - 1, 0, val);
+            parent.append(val.node);
+        }));
     }
     patch(values: unknown[], index = 0) {
         const { length } = values;
@@ -120,17 +128,11 @@ export class Process {
                         const val = watchNode.value;
                         if (val instanceof Process) {
                             for (let k = oldSize; k < newSize; k++) {
-                                this.commentHandle((<any>val.root), value[k], (parent, val) => {
-                                    this.watchNodes.splice(k - 1, 0, val);
-                                    parent.append(val.node);
-                                });
+                                this.update(<any>val.root, value[k], k);
                             }
                         } else {
                             for (let k = oldSize; k < newSize; k++) {
-                                this.commentHandle((<Element>watchNode?.node), value[k], (parent, val) => {
-                                    this.watchNodes.splice(k - 1, 0, val);
-                                    parent.append(val.node);
-                                });
+                                this.update((<Element>watchNode?.node), value[k], k);
                             }
                         }
                     }
