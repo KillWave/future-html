@@ -2,16 +2,20 @@
 import { TemplateResult } from './result'
 import { NodeType, WatchNode } from './interfaces'
 import { boundAttributeSuffix, endsWith, deleteSuffix, marker, diff } from './tools'
+
 export class Process {
     public el: Node;
     private watchNodes: WatchNode[] = [];
     private arrSize: number[] = [];
     private root: ParentNode;
     constructor(result: TemplateResult) {
-        this.el = this.pretreatment(result.getTemplate().content, result.values);
+        const container = this.pretreatment(result.getTemplate().content, result.values);
+        // this.el = container.cloneNode(true);
+        // this.root = (<any>container).firstElementChild;
+        this.el = container;
         this.root = (<any>this.el).firstElementChild;
     }
-    commentHandle(parent: Element, value: unknown, callBack?: any) {
+    commentHandle(parent: Element, value: unknown, callBack: any) {
         const watchNode = {
             type: NodeType.COMMENT,
             value,
@@ -26,18 +30,15 @@ export class Process {
             const { length } = value;
             this.arrSize.push(length);
             for (let i = 0; i < length; i++) {
-                this.commentHandle(parent, value[i]);
+                this.commentHandle(parent, value[i], this.add.bind(this));
             }
             return;
         } else {
             watchNode.node = document.createTextNode(<string>value);
         }
-        if (!callBack) {
-            parent.append(watchNode.node);
-            this.watchNodes.push(watchNode);
-        } else {
-            callBack(parent, watchNode);
-        }
+        callBack(parent, watchNode);
+        ///  parent.append(watchNode.node);this.watchNodes.push(watchNode);
+
 
     }
     pretreatment(content: DocumentFragment, values: unknown[]) {
@@ -87,12 +88,16 @@ export class Process {
                     index++;
                     const value = values[index];
                     const parent = node.parentNode;
-                    this.commentHandle(parent, value);
+                    this.commentHandle(parent, value, this.add.bind(this));
                     node.remove();
                 }
             }
         }
         return iterator.root;
+    }
+    add(parent, val) {
+        parent.append(val.node);
+        this.watchNodes.push(val);
     }
     patch(values: unknown[], index = 0) {
         const { length } = values;
@@ -113,7 +118,7 @@ export class Process {
                             if (value instanceof Process) {
                                 (<any>value.root).remove();
                             } else {
-                                (<Element>removeNode[j].node)?.remove();
+                                (<Element>removeNode.node)?.remove();
                             }
                         }
                     } else {
