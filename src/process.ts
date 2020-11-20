@@ -147,10 +147,13 @@ export class Process {
                 (<Process>watchValue).patch(value.values);
             } else {
                 if (diff(value, watchValue)) {
-                    if (watchNode.type === NodeType.NODE) {
-                        (<Element>watchNode.node).setAttribute(watchNode.name, <string>value);
-                    } else if (watchNode.type === NodeType.COMMENT) {
-                        watchNode.node.nodeValue = <string>value;
+                    switch (watchNode.type) {
+                        case NodeType.NODE:
+                            (<Element>watchNode.node).setAttribute(watchNode.name, <string>value);
+                            break;
+                        case NodeType.COMMENT:
+                            watchNode.node.nodeValue = <string>value;
+                            break;
                     }
                     watchNode.value = value;
                 }
