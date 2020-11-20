@@ -10,8 +10,6 @@ export class Process {
     private root: ParentNode;
     constructor(result: TemplateResult) {
         const container = this.pretreatment(result.getTemplate().content, result.values);
-        // this.el = container.cloneNode(true);
-        // this.root = (<any>container).firstElementChild;
         this.el = container;
         this.root = (<any>this.el).firstElementChild;
     }
@@ -37,9 +35,6 @@ export class Process {
             watchNode.node = document.createTextNode(<string>value);
         }
         callBack(parent, watchNode);
-        ///  parent.append(watchNode.node);this.watchNodes.push(watchNode);
-
-
     }
     pretreatment(content: DocumentFragment, values: unknown[]) {
         const iterator = document.createNodeIterator(
