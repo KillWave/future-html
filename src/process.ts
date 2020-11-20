@@ -26,11 +26,11 @@ export class Process {
         this.root = (<any>this.el).firstElementChild;
     }
     commentHandle(parent: Element, value: unknown, callBack: any) {
-        let watchNode = null;
+        let watchNode = new WatchNode(NodeType.COMMENT, "", value, null);
         if (value instanceof TemplateResult) {
             const val = new Process(value);
-            watchNode = new WatchNode(NodeType.COMMENT, "", val, val.el);
-
+            watchNode.value = val;
+            watchNode.node = val.el;
         } else if (value instanceof Array) {
             const { length } = value;
             this.arrSize.push(length);
@@ -39,7 +39,7 @@ export class Process {
             }
             return;
         } else {
-            watchNode = new WatchNode(NodeType.COMMENT, "", value, document.createTextNode(<string>value));
+            watchNode.node = document.createTextNode(<string>value);
         }
         callBack(parent, watchNode);
     }
@@ -66,16 +66,15 @@ export class Process {
                             node.removeAttribute(attr.name);
                             const prefix = name[0];
                             const value = values[index];
-                            let watchNode = null;
+                            let watchNode = new WatchNode(NodeType.CALLBACK, name, value, node);
                             if (prefix === "@") {
                                 node.addEventListener(
                                     name.slice(1).toLowerCase(),
                                     value
                                 );
-                                watchNode = new WatchNode(NodeType.CALLBACK, name, value, node);
                             } else {
                                 node.setAttribute(name, value);
-                                watchNode = new WatchNode(NodeType.NODE, name, value, node);
+                                watchNode.type = NodeType.NODE;
 
                             }
                             this.watchNodes.push(watchNode);
