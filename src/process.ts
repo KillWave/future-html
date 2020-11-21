@@ -99,11 +99,11 @@ export class Process {
         parent.append(val.node);
         this.watchNodes.push(val);
     }
-    update(parent: Element, value: unknown, index: number) {
-        this.commentHandle(parent, value, ((parent, val) => {
+    update(index: number, node: Node) {
+        return ((parent, val) => {
             this.watchNodes.splice(index - 1, 0, val);
-            parent.append(val.node);
-        }));
+            parent.insertBefore(val.node, node);
+        })
     }
     patch(values: unknown[], index = 0) {
         const { length } = values;
@@ -131,11 +131,11 @@ export class Process {
                         const val = watchNode.value;
                         if (val instanceof Process) {
                             for (let k = oldSize; k < newSize; k++) {
-                                this.update(<any>val.root, value[k], k);
+                                this.commentHandle((<any>val.root).parentNode, value[k], this.update(k, <any>val.root));
                             }
                         } else {
                             for (let k = oldSize; k < newSize; k++) {
-                                this.update((<Element>watchNode?.node), value[k], k);
+                                this.commentHandle((<Element>watchNode?.node.parentNode), value[k], this.update(k, <Element>watchNode?.node));
                             }
                         }
                     }
