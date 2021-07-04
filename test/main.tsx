@@ -8,9 +8,6 @@ import {CustomElement,createElement} from '../src/dom'
   
   if (typeof comp === 'function') {
     const tagName = camelToDash(comp.name)
-  
-
-
     const compDefine = customElements.get(tagName)
     if (!compDefine) {
       customElements.define(tagName, CustomElement)
@@ -28,24 +25,24 @@ import {CustomElement,createElement} from '../src/dom'
 
 
 function RootApp(props){
-  // console.log()
-  console.log('props: ',this);
-
-  // bbb()
+  console.log(props)
+  const [num,setNum] = a(0)
   return <template>
+    <button onClick={()=>{setNum(()=>num+1)}}>  {num}</button>
+  
     123
   </template>
 }
-// function bbb(){
-//   console.log(this.RootApp,this.RootApp.arguments)
-//   function ccc(){
-//     // this.RootApp
-//     console.log('this.RootApp: ', this.bbb);
-//   }
-//   ccc()
-// }
 
-function a(){
-  alert(111)
+
+function a(data){
+  const ctx = a.caller
+  return [data,function(fn){
+    fn()
+    console.log(ctx.arguments)
+    ctx.apply(ctx.arguments)
+  }]
+  //console.log(taget(...taget.arguments))
+  // alert(111)
 }
 document.querySelector("#root").append(<RootApp onClick={a}>123</RootApp>)

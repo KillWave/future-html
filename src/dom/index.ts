@@ -40,3 +40,29 @@ export function createElement(component, props, children) {
   })
   return dom
 }
+
+
+export const reparentNodes =
+    (container: Node,
+     start: Node|null,
+     end: Node|null = null,
+     before: Node|null = null): void => {
+      while (start !== end) {
+        const n = start!.nextSibling;
+        container.insertBefore(start!, before);
+        start = n;
+      }
+    };
+
+/**
+ * Removes nodes, starting from `start` (inclusive) to `end` (exclusive), from
+ * `container`.
+ */
+export const removeNodes =
+    (container: Node, start: Node|null, end: Node|null = null): void => {
+      while (start !== end) {
+        const n = start!.nextSibling;
+        container.removeChild(start!);
+        start = n;
+      }
+    };
